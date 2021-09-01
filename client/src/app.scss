@@ -1,0 +1,27 @@
+@import "../src/components/TaroUI/style/index.scss";
+
+@mixin reset {
+  margin: 0px;
+  padding: 0px;
+}
+
+@mixin fullscreen {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+}
+
+@mixin homeBanner {
+  margin-left: 10%;
+  margin-right: 15%;
+  border-radius: 20px;
+  height: 20%;
+}
+
+@mixin flexCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

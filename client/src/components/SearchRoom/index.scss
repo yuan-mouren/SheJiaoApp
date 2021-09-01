@@ -1,0 +1,51 @@
+.component-search-room {
+  width: 100%;
+  margin: 0 12px;
+  position: relative;
+  .at-search-bar {
+    &::after {
+      border: 0px;
+    }
+    .at-search-bar__input-cnt {
+      border-radius: 10px;
+      background-color: transparent;
+      border: 1px solid #f0f0f0;
+      height: 26PX;
+      left: -10px;
+    }
+    .at-search-bar__input {
+      height: 24PX !important;
+    }
+    .at-search-bar__action {
+      height: 24PX;
+      line-height: 24PX;
+      font-size: 10PX;
+      display: flex;
+      align-items: center;
+    }
+    .at-search-bar__clear {
+      top: -1PX
+    }
+  }
+  .search-container {
+    height: 260px;
+    margin: 30px;
+    width: 70%;
+    .at-radio {
+      &::before {
+        border: 0px;
+      }
+      .at-radio__option-wrap {
+        padding: 16rpx 20rpx 16rpx 0
+      }
+    }
+  }
+  .join-icon {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    font-size: 50px;
+    color: rgb(241, 186, 32);
+    transition: all .5s ease;
+  }
+}

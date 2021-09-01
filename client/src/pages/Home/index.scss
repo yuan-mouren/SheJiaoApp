@@ -1,0 +1,120 @@
+@import "../../app.scss";
+
+.home {
+  @include fullscreen;
+  display: flex;
+  padding: 30px;
+  justify-content: center;
+  flex-direction: column;
+  .userInfo {
+    @include fullscreen;
+    @include reset;
+    background-color: transparent;
+    z-index: 100;
+  }
+  .home-tab {
+    @include homeBanner;
+    margin-bottom: 15%;
+    position: relative;
+    &:last-of-type {
+      margin-bottom: 0px;
+    }
+  }
+  .create-room {
+    @include flexCenter;
+    height: 230px;
+    width: 100%;
+    border-radius: 20px;
+    background-image: linear-gradient(
+      135deg,
+      rgb(138, 206, 55) 40%,
+      rgba(138, 206, 55, 0.8) 80%,
+      rgb(190, 228, 153)
+    );
+    box-shadow: 1px 20px 20px rgb(190, 228, 153, 0.2);
+    .icon-ziyuan-copy::before {
+      font-size: 200px;
+      color: rgba(255, 255, 255, 0.3);
+      position: absolute;
+      top: -140px;
+      left: -200px;
+      transition: all 0.3s ease;
+    }
+    transition: all 0.3s ease;
+  }
+  .join-room {
+    @include flexCenter;
+    height: 230px;
+    width: 100%;
+    border-radius: 20px;
+    background-image: linear-gradient(
+      135deg,
+      rgb(241, 186, 32) 40%,
+      rgba(241, 186, 32, 0.8) 80%,
+      rgb(243, 221, 108)
+    );
+    box-shadow: 1px 20px 20px rgb(243, 221, 108, 0.2);
+    .icon-zhuyefaxian::before {
+      font-size: 200px;
+      color: rgba(255, 255, 255, 0.3);
+      position: absolute;
+      top: -160px;
+      left: -200px;
+      transition: all 0.3s ease;
+    }
+    transition: all 0.3s ease;
+  }
+  .home-tab.isActive {
+    height: auto;
+    border: 1px solid rgb(241, 186, 32);
+    &:first-of-type {
+      border: 1px solid rgb(138, 206, 55);
+    }
+    .join-room,
+    .create-room {
+      height: 100px;
+      width: 100%;
+      border-radius: 10px;
+      .room-title {
+        font-size: 30px;
+      }
+    }
+    .icon-zhuyefaxian::before,
+    .icon-ziyuan-copy::before {
+      font-size: 40px;
+      left: -60px;
+      top: -6px;
+    }
+    .search-room {
+      height: 400px;
+      transition: all 0.2s 0.3s ease;
+    }
+    .room-info {
+      height: 500px;
+      transition: all 0.2s 0.3s ease;
+    }
+  }
+  .room-title {
+    color: #fff;
+    font-size: 45px;
+    position: relative;
+  }
+  .search-room,
+  .room-info {
+    height: 0px;
+    width: 100%;
+    overflow: hidden;
+    @include flexCenter;
+  }
+
+  .join-room-icon {
+    border-radius: 50px;
+    font-size: 30px;
+    position: absolute;
+    bottom: 50px;
+    right: -30px;
+    padding: 10px 50px;
+    color: #fff;
+    background-color: #2dc9ce;
+  }
+}
