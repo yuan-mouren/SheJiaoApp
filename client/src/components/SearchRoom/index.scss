@@ -47,5 +47,34 @@
     font-size: 50px;
     color: rgb(241, 186, 32);
     transition: all .5s ease;
+    height: 60px;
+    max-width: 200px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    &.has-wrapper {
+      border: 1px solid rgb(241, 186, 32);
+    }
+    .password-ipt {
+      box-sizing:border-box;
+      height: 60px;
+      overflow: hidden;
+    }
+    .at-input {
+      padding: 0px;
+      margin-bottom: 0px;
+      height: 60px;
+      
+      input {
+        line-height: 1;
+      }
+      &::after {
+        border-bottom-width: 0px;
+      }
+    }
+    .icon-tianjia {
+      font-size: 50px;
+    }
   }
 }

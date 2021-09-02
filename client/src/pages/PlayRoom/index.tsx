@@ -77,18 +77,37 @@ const PlayRoom = () => {
         env: envId
       });
 
-      const { _id } = roomInfo || {};
+      let effectRoomInfo = roomInfo;
+
+      if (!roomInfo) {
+        const res = await Taro.cloud.callFunction({
+          name: "player",
+          data: {
+            func: "hasPlayer"
+          }
+        });
+
+        const result = getRequestRes(res);
+        if (roomInfo.code) {
+          effectRoomInfo = result.data;
+          updateStore({ type: "roomInfo", payload: result.data });
+        }
+      }
+
+      const { _id } = effectRoomInfo;
 
       watcher = db
         .collection("rooms")
         .where({
-          _id: _id
+          _id
         })
         .watch({
           onChange: function(snapshot: any) {
             const { docs, docChanges } = snapshot || {};
             const dataType = docChanges[0].dataType;
-            const players = docs?.[0]?.players;
+            const data = docs?.[0];
+            const players = data?.players;
+            const isStart = data?.isStart;
 
             switch (dataType) {
               case "init":
@@ -96,14 +115,14 @@ const PlayRoom = () => {
                 if (!doc) {
                   return;
                 }
-                if (!roomInfo) {
-                  updateStore({ type: "roomInfo", payload: doc });
-                }
                 for (let i = 0; i < players.length; i++) {
                   if (players[i].catchInfo && players[i].openId === openId) {
                     setCatchInfo(players[i].catchInfo);
                     break;
                   }
+                }
+                if (isStart !== start) {
+                  setStart(isStart);
                 }
                 setPlayers(
                   (players || []).map(play => ({
@@ -117,6 +136,9 @@ const PlayRoom = () => {
                     setCatchInfo(players[i].catchInfo);
                     break;
                   }
+                }
+                if (isStart !== start) {
+                  setStart(isStart);
                 }
                 setPlayers(res => {
                   return (res || []).map((item, index) => {
@@ -139,7 +161,7 @@ const PlayRoom = () => {
           }
         });
     },
-    [roomInfo, setPlayers, setCatchInfo]
+    [roomInfo, setPlayers, setCatchInfo, setStart, start]
   );
 
   useDidShow(async () => {
@@ -192,13 +214,12 @@ const PlayRoom = () => {
         }
       });
       const gameInfo = getRequestRes(res);
-      if (!gameInfo.code) {
-        return;
+      if (gameInfo.code) {
+        setStart(true);
       }
     } else {
       setOpen(true);
     }
-    setStart(!start);
   }, [setStart, start, roomInfo, setOpen]);
 
   const confirmCatch = React.useCallback(
@@ -244,14 +265,18 @@ const PlayRoom = () => {
       name: "room",
       data: {
         func: "exit",
-        roomId: roomInfo?._id
+        params: { roomId: roomInfo?._id }
       }
     });
     const exitRoom = getRequestRes(res);
     if (exitRoom.code) {
-      Taro.redirectTo({
-        url: "/pages/Home/index"
-      });
+      setStart(false);
+      updateStore({ type: "roomInfo", payload: null });
+      setTimeout(() => {
+        Taro.redirectTo({
+          url: "/pages/Home/index"
+        });
+      }, 500);
     } else {
       Taro.atMessage({
         type: "error",
@@ -321,6 +346,44 @@ const PlayRoom = () => {
     [setPlayers]
   );
 
+  const exitGame = React.useCallback(async () => {
+    const res = await Taro.cloud.callFunction({
+      name: "game",
+      data: {
+        func: "userExit",
+        params: {
+          roomId: roomInfo?._id
+        }
+      }
+    });
+
+    const exit = getRequestRes(res);
+    if (exit.code) {
+      updateStore({ type: "roomInfo", payload: null });
+      setTimeout(() => {
+        Taro.redirectTo({
+          url: "/pages/Home/index"
+        });
+      }, 500);
+    }
+  }, [roomInfo]);
+
+  const renderRoomCtr = React.useMemo(() => {
+    if (openId && openId === roomInfo?.creator?.openId) {
+      return (
+        <View className="create-game" onClick={handleGame}>
+          {start ? "结束游戏" : "开始游戏"}
+        </View>
+      );
+    }
+    if (openId) {
+      <View className="create-game exit-game" onClick={exitGame}>
+        退出房间
+      </View>;
+    }
+    return "";
+  }, [openId, roomInfo, start]);
+
   return (
     <View className="page-play-room">
       <AtModal
@@ -335,13 +398,7 @@ const PlayRoom = () => {
       <View className="user-info">
         <View className="left-info">
           <AtAvatar circle image={userInfo?.avatarUrl}></AtAvatar>
-          {openId && openId === roomInfo?.creator?.openId ? (
-            <View className="create-game" onClick={handleGame}>
-              {start ? "结束游戏" : "开始游戏"}
-            </View>
-          ) : (
-            ""
-          )}
+          {renderRoomCtr}
         </View>
         <View className="right-info">
           <View className="play-info-wrapper">
@@ -380,10 +437,10 @@ const PlayRoom = () => {
               })}
               key={player.openId}
               style={getPositionByIdx(
-                sortedPlayers.filter(item => item.openId !== player.openId)
-                  ? sortedPlayers.findIndex(
-                      sort => sort.openId === player.openId
-                    )
+                sortedPlayers?.length
+                  ? sortedPlayers
+                      .filter(item => item.openId !== openId)
+                      .findIndex(sort => sort.openId === player.openId)
                   : index
               )}
               onClick={
@@ -393,7 +450,7 @@ const PlayRoom = () => {
               }
             >
               <View className="avatar-wrapper">
-                {start && player.leftWords?.length ? (
+                {start ? (
                   <View
                     className={cls({
                       "flip-container": true,

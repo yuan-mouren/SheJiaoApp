@@ -25,26 +25,26 @@ exports.main = async (event, context) => {
 
   const { func, params, userInfo } = event;
   let res;
-  try {
-    switch (func) {
-      case "create":
-        res = await createRoom(db, params, userInfo);
-        return res;
-      case "find":
-        res = await findRoom(db, params, userInfo);
-        return res;
-      case "join":
-        res = await joinRoom(db, params, userInfo);
-        return res;
-      case "exit":
-        res = await distoryRoom(db, params, userInfo);
-        return res;
-      default:
-        return 1;
-    }
-  } catch (err) {
-    return { code: 0, status: "failed", data: err };
+  // try {
+  switch (func) {
+    case "create":
+      res = await createRoom(db, params, userInfo);
+      return res;
+    case "find":
+      res = await findRoom(db, params, userInfo);
+      return res;
+    case "join":
+      res = await joinRoom(db, params, userInfo);
+      return res;
+    case "exit":
+      res = await distoryRoom(db, params, userInfo);
+      return res;
+    default:
+      return 1;
   }
+  // } catch (err) {
+  //   return { code: 0, status: "failed", data: err };
+  // }
 };
 
 const createRoom = async (db, params, userInfo) => {
@@ -56,6 +56,7 @@ const createRoom = async (db, params, userInfo) => {
       playerNum,
       roomPassWord,
       creator: { ...creator, openId: userInfo.openId },
+      players: [{ ...creator, openId: userInfo.openId }],
       createTime: db.serverDate(),
       roundNum,
     },
@@ -136,9 +137,17 @@ const checkRoomRight = async (db, params, userInfo) => {
   }
 
   const room = await db.collection("rooms").doc(roomId);
+  const isStart = room.isStart;
   const isMember = (room.players || []).some(
     (player) => player.openId === userInfo.openId
   );
+  if (isStart) {
+    return {
+      code: 0,
+      status: "error",
+      message: "当前房间已在游戏中，请稍后加入",
+    };
+  }
   if (isMember) {
     return { code: 0, status: "error", message: "当前您已在房间中" };
   }
@@ -174,16 +183,26 @@ const distoryRoom = async (db, params, userInfo) => {
   const { roomId } = params;
   const roomInfo = await db.collection("rooms").doc(roomId).get();
   let record;
-  let remove;
   if (roomInfo && roomInfo.data) {
     record = await db.collection("records").add({
       data: roomInfo.data,
     });
-    remove = await db.collection("rooms").doc(roomId).remove();
+    removePlayer = await db
+      .collection("players")
+      .where({
+        roomId,
+      })
+      .remove();
+    removeRoom = await db.collection("rooms").doc(roomId).remove();
   }
-  if (record && remove) {
+  if (record) {
     return { code: 1, status: "success", message: "游戏结束", data: record };
   }
 
-  return { code: 0, status: "failed", message: "当前房间信息有误" };
+  return {
+    code: 0,
+    status: "failed",
+    message: "当前房间信息有误",
+    data: roomInfo,
+  };
 };

@@ -6,6 +6,44 @@
   padding: 30px;
   justify-content: center;
   flex-direction: column;
+  overflow: hidden;
+  .home-circle1 {
+    background-image: linear-gradient(135deg, #ff9700, #ed1c24);
+    height: 500px;
+    width: 500px;
+    border-radius: 50%;
+    position: absolute;
+    top: -130px;
+    right: -148px;
+    animation: move1 3s ease 0s infinite;
+  }
+  .home-circle2 {
+    background-image: linear-gradient(135deg, #0081ff, #1cbbb4);
+    height: 300px;
+    width: 300px;
+    border-radius: 50%;
+    position: absolute;
+    bottom: -50px;
+    left: -10px;
+    animation: move1 3s ease 0.4s infinite;
+  }
+  .home-circle3 {
+    background-image: linear-gradient(135deg, #ec008c, #6739b6);
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+    position: absolute;
+    top: 200px;
+    left: 100px;
+  }
+  @keyframes move1 {
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
   .userInfo {
     @include fullscreen;
     @include reset;
@@ -16,6 +54,7 @@
     @include homeBanner;
     margin-bottom: 15%;
     position: relative;
+    background-color: #fff;
     &:last-of-type {
       margin-bottom: 0px;
     }
@@ -24,6 +63,7 @@
     @include flexCenter;
     height: 230px;
     width: 100%;
+    overflow: hidden;
     border-radius: 20px;
     background-image: linear-gradient(
       135deg,
@@ -64,10 +104,11 @@
     }
     transition: all 0.3s ease;
   }
+
   .home-tab.isActive {
     height: auto;
     border: 1px solid rgb(241, 186, 32);
-    &:first-of-type {
+    &.isCreate {
       border: 1px solid rgb(138, 206, 55);
     }
     .join-room,
@@ -111,10 +152,20 @@
     border-radius: 50px;
     font-size: 30px;
     position: absolute;
-    bottom: 50px;
+    bottom: 100px;
     right: -30px;
     padding: 10px 50px;
     color: #fff;
     background-color: #2dc9ce;
+  }
+  .exit-room-icon {
+    border-radius: 50px;
+    font-size: 30px;
+    position: absolute;
+    bottom: 20px;
+    right: -30px;
+    padding: 10px 50px;
+    color: #fff;
+    background-color: #e54d42;
   }
 }

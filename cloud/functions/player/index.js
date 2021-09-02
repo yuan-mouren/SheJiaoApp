@@ -71,7 +71,8 @@ const hasPlayer = async (db, params, userInfo) => {
   if (playerInfo && playerInfo.data && playerInfo.data.length) {
     const { roomId, _id } = playerInfo.data[0];
     if (roomId) {
-      return { code: 1, status: "success", data: { roomId } };
+      const roomInfo = await db.collection("rooms").doc(roomId).get();
+      return { code: 1, status: "success", data: roomInfo.data };
     } else {
       await collection.doc(_id).remove();
       return { code: 1, status: "success", data: null };

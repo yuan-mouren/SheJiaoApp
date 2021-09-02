@@ -13,6 +13,7 @@ import cls from "classnames";
 import { rootContext } from "../../hooks/useStore";
 import { Status } from "../../types/home.type";
 import { State } from "../../types/store.type";
+import { getRequestRes } from "../../utils";
 
 import "./index.scss";
 
@@ -31,10 +32,23 @@ function Home() {
   useReady(() => {});
 
   // 对应 onShow
-  useDidShow(() => {
+  useDidShow(async () => {
     const storageUserInfo = Taro.getStorageSync("userInfo");
     if (storageUserInfo) {
       updateStore({ type: "userInfo", payload: storageUserInfo });
+    }
+    if (!roomInfo) {
+      const res = await Taro.cloud.callFunction({
+        name: "player",
+        data: {
+          func: "hasPlayer"
+        }
+      });
+
+      const roomInfo = getRequestRes(res);
+      if (roomInfo.code) {
+        updateStore({ type: "roomInfo", payload: roomInfo.data });
+      }
     }
   });
 
@@ -84,6 +98,23 @@ function Home() {
     [status]
   );
 
+  const exitGame = React.useCallback(async () => {
+    const res = await Taro.cloud.callFunction({
+      name: "game",
+      data: {
+        func: "userExit",
+        params: {
+          roomId: roomInfo?._id
+        }
+      }
+    });
+
+    const exit = getRequestRes(res);
+    if (exit.code) {
+      updateStore({ type: "roomInfo", payload: null });
+    }
+  }, []);
+
   const goToPlayerRoom = () => {
     Taro.redirectTo({
       url: "/pages/PlayRoom/index"
@@ -94,11 +125,15 @@ function Home() {
     <>
       <AtMessage />
       <View className="home" onClick={handleStatus.bind(null, null)}>
+        <View className="home-circle1"></View>
+        <View className="home-circle2"></View>
+        <View className="home-circle3"></View>
         {!userInfo ? <Button onClick={getUserInfo} className="userInfo" /> : ""}
         <View
           className={cls({
             "home-tab": true,
-            isActive: status === Status.create
+            isActive: status === Status.create,
+            isCreate: status === Status.create
           })}
           onClick={handleStatus.bind(null, Status.create)}
         >
@@ -114,7 +149,8 @@ function Home() {
         <View
           className={cls({
             "home-tab": true,
-            isActive: status === Status.join
+            isActive: status === Status.join,
+            isCreate: status === Status.create
           })}
           onClick={handleStatus.bind(null, Status.join)}
         >
@@ -128,9 +164,14 @@ function Home() {
           </View>
         </View>
         {roomInfo ? (
-          <View className="join-room-icon" onClick={goToPlayerRoom}>
-            进入房间
-          </View>
+          <>
+            <View className="join-room-icon" onClick={goToPlayerRoom}>
+              进入房间
+            </View>
+            <View className="exit-room-icon" onClick={exitGame}>
+              退出房间
+            </View>
+          </>
         ) : (
           ""
         )}

@@ -4,7 +4,7 @@ export const getRequestRes = (
   res: ResultWrapper,
   fields?: (keyof Result)[]
 ): any => {
-  console.log(res);
+  // console.log(res);
   if (!res) {
     return "";
   }

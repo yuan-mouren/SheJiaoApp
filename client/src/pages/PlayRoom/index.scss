@@ -33,6 +33,9 @@
         width: 120px;
         background-color: #52c41a;
         border-radius: 10px;
+        &.exit-game {
+          background-color: #e54d42;
+        }
       }
     }
     .right-info {

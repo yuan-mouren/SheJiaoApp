@@ -13,22 +13,22 @@ exports.main = async (event, context) => {
   const { func, params, userInfo } = event;
   let res;
   try {
-    switch (func) {
-      case "start":
-        res = await startGame(db, params, userInfo);
-        return res;
-      case "catchPlayer":
-        res = await catchPlayer(db, params, userInfo);
-        return res;
-      case "catchConfirm":
-        res = await catchConfirm(db, params, userInfo);
-        return res;
-      case "userExit":
-        res = await userExit(db, params, userInfo);
-        return res;
-      default:
-        return 1;
-    }
+  switch (func) {
+    case "start":
+      res = await startGame(db, params, userInfo);
+      return res;
+    case "catchPlayer":
+      res = await catchPlayer(db, params, userInfo);
+      return res;
+    case "catchConfirm":
+      res = await catchConfirm(db, params, userInfo);
+      return res;
+    case "userExit":
+      res = await userExit(db, params, userInfo);
+      return res;
+    default:
+      return 1;
+  }
   } catch (err) {
     console.log(err);
   }
@@ -57,6 +57,7 @@ const startGame = async (db, params, userInfo) => {
     const res = await roomCollection.doc(roomId).update({
       data: {
         players: hasWordPlayers,
+        isStart: true,
       },
     });
     return { code: 1, status: "success", data: wordsList };
@@ -155,33 +156,46 @@ const userExit = async (db, params, userInfo) => {
     roomInfo = await db.collection("rooms").doc(player.roomId).get();
   }
   if (roomInfo && roomInfo.data) {
-    const { creator, players } = roomInfo.data;
+    const { creator, players, _id } = roomInfo.data;
     let updateCreator;
     let updatePlayers;
-    if (players.some((player) => player.openId === openId)) {
-      updatePlayers = players.filter((player) => player.openId === openId);
+
+    if (players.some((player) => player && player.openId === openId)) {
+      updatePlayers = players.filter(
+        (player) => player && player.openId !== openId
+      );
     }
-    if (creator.openId === openId) {
-      updateCreator = {
-        openId: players[0].openId,
-        nickName: players[0].nickName,
-        avatarUrl: players[0].avatarUrl,
-      };
+    if (!updatePlayers.length) {
+      await db.collection("rooms").doc(_id).remove();
     }
-    if (updateCreator || updatePlayers) {
-      db.collection("rooms")
-        .doc(player.roomId)
+    if (creator.openId === openId && updatePlayers.length) {
+      updateCreator = updatePlayers[0]
+        ? {
+            openId: updatePlayers[0].openId,
+            nickName: updatePlayers[0].nickName,
+            avatarUrl: updatePlayers[0].avatarUrl,
+          }
+        : {};
+    }
+
+    if (updateCreator || updatePlayers.length) {
+      await db
+        .collection("rooms")
+        .doc(_id)
         .update({
           data: {
-            creator: updateCreator || creator,
-            players: updatePlayers || players,
+            creator: updateCreator,
+            players: updatePlayers,
           },
         });
     }
+    const res = await db
+      .collection("players")
+      .where({
+        openId,
+      })
+      .remove();
+    return { code: 1, status: "success", data: res };
   }
-  db.collection("players")
-    .where({
-      openId,
-    })
-    .remove();
+  return { code: 0, status: "failed", message: "信息修改失败" };
 };

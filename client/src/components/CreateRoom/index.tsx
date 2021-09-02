@@ -83,9 +83,11 @@ export const CreateRoom = () => {
         const { code, data } = getRequestRes(res as any, ["code", "data"]);
         if (code) {
           updateStore({ type: "roomInfo", payload: data });
-          Taro.redirectTo({
-            url: "/pages/PlayRoom/index"
-          });
+          setTimeout(() => {
+            Taro.redirectTo({
+              url: "/pages/PlayRoom/index"
+            });
+          }, 500);
         }
       }
     });
